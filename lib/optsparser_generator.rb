@@ -1,6 +1,5 @@
 require 'ostruct'
 require 'optparse'
-require 'pp'
 
 class OptParseGenerator
   def initialize(ostruct)
