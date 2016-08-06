@@ -57,12 +57,8 @@ class OptParseGenerator
     end
   end
 
-  def self.respond_to?(method_sym, include_private = false)
-    if respond_to?(method_sym, include_private)
-      respond_to?(method_sym, include_private)
-    else
-      @optparser.respond_to?(method_sym, include_private)
-    end
+  def respond_to?(method_sym, include_private = false)
+    @optparser.respond_to?(method_sym, include_private) || super
   end
 end
 
