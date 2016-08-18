@@ -19,7 +19,7 @@ module OptionParserGenerator
     unless ostruct.is_a?(OpenStruct)
       raise WrongArgumentType, 'needs an OpenStruct'
     end
-    ostruct.dup.freeze
+    ostruct.dup.freeze # not needed but makes development easier
   end
 
   # does the magic
