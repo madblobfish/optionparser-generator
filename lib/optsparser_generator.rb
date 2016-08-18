@@ -41,7 +41,7 @@ module OptionParserGenerator
         values = defaults["#{key}__values"] || []
         short = defaults["#{key}__short"] || ''
         arguments = []
-        arguments << help unless help.empty?
+        arguments << help
         arguments << "-#{short}" unless short.empty?
         case val
         when FalseClass, TrueClass
