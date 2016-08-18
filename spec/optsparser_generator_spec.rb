@@ -50,6 +50,14 @@ describe OptionParserGenerator do
     expect(ostruct.val).to eq(123)
   end
 
+  it 'should not take in later modifications of the input OpenStruct' do
+    ostruct = OpenStruct.new
+    ostruct.val = 123
+    optparser = OptParseGen(ostruct)
+    ostruct.val = 12
+    expect(optparser.parse([]).val).to eq(123)
+  end
+
   # agrument handling
   it 'should raise WrongArgumentType when not given an OpenStruct' do
     [
