@@ -37,19 +37,18 @@ module OptionParserGenerator
         trigger = key.to_s.tr('_', '-')
         next if trigger.end_with?('--help', '--values', '--short', '--class')
 
-        help = "#{defaults[key.to_s << '__help']} (Default: #{val})"
-        values = defaults[key.to_s << '__values'] || []
-        short = defaults[key.to_s << '__short'] || ''
+        help = "#{defaults["#{key}__help"]} (Default: #{val})"
+        values = defaults["#{key}__values"] || []
+        short = defaults["#{key}__short"] || ''
         arguments = []
         arguments << help unless help.empty?
         arguments << "-#{short}" unless short.empty?
-        case defaults[key.to_s << '__class'] || val
+        case val
         when FalseClass, TrueClass
           if trigger.start_with?('no-')
             trigger[0..2] = ''
-            if defaults.each_pair.map { |v| v.first.to_s }.include?(trigger)
-              raise OptionCollision, "on #{trigger}" unless options[:ignore_collisions]
-              next
+            if defaults.each_pair.map { |v| v.first.to_s }.include?(trigger) && !options[:ignore_collisions]
+              raise OptionCollision, "on #{key}"
             end
           end
           opts.on("--[no-]#{trigger}", *arguments) do |b|
@@ -62,7 +61,7 @@ module OptionParserGenerator
               end
           end
         else
-          arguments << defaults[key.to_s << '__class'] || val.class
+          arguments.push defaults["#{key}__class"] || (val.class.equal?(Fixnum) ? Integer : val.class)
           arguments << values if values.any?
           opts.on("--#{trigger}=ARG", *arguments) do |str|
             out = opts.instance_variable_get(:@out)
