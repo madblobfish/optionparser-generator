@@ -42,10 +42,11 @@ describe OptionParserGenerator do
   it 'parse and parse! should not modify the defaults!' do
     ostruct = OpenStruct.new
     ostruct.val = 123
-    expect(OptParseGen(ostruct).parse(['--val=1']).val).to eq(1)
-    expect(OptParseGen(ostruct).parse([]).val).to eq(123)
-    expect(OptParseGen(ostruct).parse(['--val=3']).val).to eq(3)
-    expect(OptParseGen(ostruct).parse([]).val).to eq(123)
+    optparser = OptParseGen(ostruct)
+    expect(optparser.parse(['--val=1']).val).to eq(1)
+    expect(optparser.parse([]).val).to eq(123)
+    expect(optparser.parse(['--val=3']).val).to eq(3)
+    expect(optparser.parse([]).val).to eq(123)
     expect(ostruct.val).to eq(123)
   end
 
