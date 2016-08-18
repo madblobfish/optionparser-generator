@@ -11,8 +11,8 @@ require 'optsparser_generator'
 os = OpenStruct.new
 os.default = 'value'
 os.val = 123
-os.val__values = [1, 2, 123]
-os.val__class = Integer # numbers need a class
+os.val__values = [1, 1.5, 2, 123]
+os.val__class = Numeric
 os.bool = true
 os.bool__help = 'description of argument'
 os.bool__short = 'b'
@@ -26,7 +26,7 @@ opt_parser = OptionParserGenerator(os)
 ## Special values
 * __help  	defines the description for a property
 * __values	defines possible values in an Array
-* __short 	defines the
+* __short 	defines the short trigger
 * __class 	defines the Class which OptionParser then tries to coerce to
 
 Enjoy
