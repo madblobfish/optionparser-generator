@@ -28,7 +28,7 @@ module OptionParserGenerator
   # @todo split this up
   # @param ostruct [OpenStruct] Default values with special values
   # @param options [Hash]
-  # @option options [Boolean] :ignore_collisions ignore bool key collisions @see OptionCollision
+  # @option options [Boolean] :ignore_collisions ignore bool key collisions see OptionCollision
   def self.[](ostruct, **options)
     defaults = handle_arguments(ostruct)
 
