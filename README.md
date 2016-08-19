@@ -29,4 +29,10 @@ opt_parser = OptionParserGenerator(os)
 * __short 	defines the short trigger
 * __class 	defines the Class which OptionParser then tries to coerce to
 
+# Version numbers
+I choose two digit version numbers.
+The first digit indicates breaking changes.
+Second digit increases per release.
+
+
 Enjoy
