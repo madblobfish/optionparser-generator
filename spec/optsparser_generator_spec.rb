@@ -34,6 +34,12 @@ describe OptionParserGenerator do
     expect(OptParseGen(OpenStruct.new)).to be_a(OptionParser)
   end
 
+  it 'should take an descendant of OpenStruct and return an OptionParser' do
+    class OpenStructDescendant < OpenStruct
+    end
+    expect(OptParseGen(OpenStructDescendant.new)).to be_a(OptionParser)
+  end
+
   it 'parse and parse! should return the defaults if not overridden' do
     expect(OptParseGen(os).parse).to eq(os)
     expect(OptParseGen(os).parse!([])).to eq(os)
