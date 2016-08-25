@@ -176,7 +176,7 @@ describe OptionParserGenerator do
   end
 
   it 'should write the default values into help' do
-    ostruct = OpenStruct.new #defining it here keeps the string constant
+    ostruct = OpenStruct.new # defining it here keeps the string constant
     ostruct.bool = false
     ostruct.bool__short = 'b'
     ostruct.bool__help = 'yes'
