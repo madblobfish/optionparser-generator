@@ -100,6 +100,9 @@ module OptionParserGenerator
     end
   end
 end
+
+# rubocop:disable Style/MethodName
+
 # global shorthand
 # alias to OptionParserGenerator[arg, opt]
 # @return [OptionParser]
@@ -108,3 +111,5 @@ def OptionParserGenerator(arg, **opt)
   OptionParserGenerator[arg, opt]
 end
 alias OptParseGen OptionParserGenerator
+
+# rubocop:enable Style/MethodName
