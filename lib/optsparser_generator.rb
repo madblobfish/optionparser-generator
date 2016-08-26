@@ -102,6 +102,9 @@ module OptionParserGenerator
     end
   end
 end
+# Object alias
+# @see OptionParserGenerator
+OptParseGen = OptionParserGenerator
 
 # rubocop:disable Style/MethodName
 

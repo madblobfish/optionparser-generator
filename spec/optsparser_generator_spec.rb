@@ -23,6 +23,7 @@ describe OptionParserGenerator do
   # general
   it 'should provide OptionParserGenerator and OptParseGen interfaces' do
     expect(method(:OptionParserGenerator)).to eql(method(:OptParseGen))
+    expect(OptionParserGenerator).to eql(OptParseGen)
   end
 
   it 'should modify the OptionParser to return an OpenStruct' do
