@@ -42,8 +42,8 @@ describe OptionParserGenerator do
   end
 
   it 'parse and parse! should return the defaults if not overridden' do
-    expect(OptParseGen(os).parse).to eq(os)
-    expect(OptParseGen(os).parse!([])).to eq(os)
+    expect(OptParseGen.parse(os)).to eq(os)
+    expect(OptParseGen.parse!(os, [])).to eq(os)
   end
 
   # modification safety
@@ -126,50 +126,54 @@ describe OptionParserGenerator do
     expect(optparser.parse(['--string=bla']).string).to eq('bla').and be_a(String)
   end
 
-  # special booleans
-  it 'should define booleans starting with "no_"' do
-    optparser = OptParseGen(os_no)
-    expect(optparser.parse(['--bool']).no_bool).to be_falsy
-    expect(optparser.parse(['--no-bool']).no_bool).to be_truthy
-  end
+  # special boolean tests
+  describe 'booleans' do
+    it 'should generate an trigger --bool for negating the default' do
+      expect(OptParseGen.parse(os_no, ['--bool']).no_bool).to be_falsy
+    end
 
-  it 'should define booleans' do
-    optparser = OptParseGen(os)
-    result = os.dup
-    expect(optparser.parse(['-b'])).to eq(result)
-    expect(optparser.parse(['--bool'])).to eq(result)
-    result.bool = false
-    expect(optparser.parse(['--no-bool'])).to eq(result)
-    expect(optparser.parse(['--no-bool']).bool).not_to eq(optparser.parse(['--bool']).bool) # just making sure
-    result.bool = true
-    expect(optparser.parse(['--bool'])).to eq(result)
-  end
+    it 'should generate an trigger --bool for reestablishing the default' do
+      expect(OptParseGen.parse(os_no, ['--no-bool']).no_bool).to be_truthy
+    end
 
-  it 'should ignore colliding no_ on boolean values when given :ignore_collisions option' do
-    OptParseGen(os_collide, ignore_collisions: true)
-  end
+    it 'should work in general' do
+      optparser = OptParseGen(os)
+      result = os.dup
+      expect(optparser.parse(['-b'])).to eq(result)
+      expect(optparser.parse(['--bool'])).to eq(result)
+      result.bool = false
+      expect(optparser.parse(['--no-bool'])).to eq(result)
+      expect(optparser.parse(['--no-bool']).bool).not_to eq(optparser.parse(['--bool']).bool) # just making sure
+      result.bool = true
+      expect(optparser.parse(['--bool'])).to eq(result)
+    end
 
-  it 'should continue after collision when given :ignore_collisions option' do
-    optparser = OptParseGen(os_collide, ignore_collisions: true)
-    optparser.parse(['--zz=3'])
-    expect { optparser.parse(['--no-no-bool']) }.to raise_error(OptionParser::InvalidOption)
-  end
+    it 'colliding should be ignored when given :ignore_collisions option' do
+      optparser = OptParseGen(os_collide, ignore_collisions: true)
+      expect { optparser.parse(['--no-no-bool']) }.to raise_error(OptionParser::InvalidOption)
+    end
 
-  it 'should handle colliding no_ on boolean values' do
-    expect do
-      OptParseGen(os_collide)
-    end.to raise_error(OptionParserGenerator::OptionCollision, 'on no_bool')
-    expect do
-      OptParseGen(os_collide, ignore_collisions: false)
-    end.to raise_error(OptionParserGenerator::OptionCollision)
+    it 'should continue after collision when given :ignore_collisions option' do
+      optparser = OptParseGen(os_collide, ignore_collisions: true)
+      optparser.parse(['--zz=3'])
+      expect { optparser.parse(['--no-no-bool']) }.to raise_error(OptionParser::InvalidOption)
+    end
+
+    it 'should handle colliding no_ on boolean values' do
+      expect do
+        OptParseGen(os_collide)
+      end.to raise_error(OptionParserGenerator::OptionCollision, 'on no_bool')
+      expect do
+        OptParseGen(os_collide, ignore_collisions: false)
+      end.to raise_error(OptionParserGenerator::OptionCollision)
+    end
   end
 
   # output interfaces
   it 'should print usage and exit on --help' do
-    optparser = OptParseGen(OpenStruct.new)
     expect do
       begin
-        optparser.parse('--help')
+        OptParseGen.parse(OpenStruct.new, '--help')
         fail
       rescue SystemExit => e
         expect(e.status).to eq(0)
@@ -184,10 +188,9 @@ describe OptionParserGenerator do
     ostruct.bool__help = 'yes'
     ostruct.int = 12
     ostruct.string = 'yep'
-    optparser = OptParseGen(ostruct)
     expect do
       begin
-        optparser.parse('--help')
+        OptParseGen.parse(ostruct, '--help')
         fail
       rescue SystemExit => e
         expect(e.status).to eq(0)
