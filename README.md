@@ -1,4 +1,6 @@
 # OptionParser Generator
+[![Build Status](https://travis-ci.org/madblobfish/optionparser-generator.svg?branch=master)](https://travis-ci.org/madblobfish/optionparser-generator)
+
 Small gem which generates an OptionParser object from an OpenStruct.
 
 # Installation
