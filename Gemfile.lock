@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    optsparser_generator (2.3)
+    optsparser_generator (2.4)
 
 GEM
   remote: https://rubygems.org/
