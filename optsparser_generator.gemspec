@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name     = 'optsparser_generator'
-  s.version  = '2.4'
+  s.version  = '2.5'
   s.summary  = 'Generates OptionParser using an OpenStruct'
   s.author   = 'Marvin Zerulla'
   s.homepage = 'https://github.com/madblobfish/optionparser-generator'
