@@ -196,4 +196,26 @@ describe OptionParserGenerator do
       "Usage: #{File.basename($0)} [options]\n    -b, --[no-]bool                  yes (Default: false)\n        --int=ARG                     (Default: 12)\n        --string=ARG                  (Default: yep)\n    -h, --help\n"
     ).to_stdout
   end
+
+  # shorthands for direct parsing
+  describe 'OptParseGen.parse & OptParseGen.parse!' do
+    it 'should basically do what OptParseGen[].parse/parse! do' do
+      expect(OptParseGen.parse(os, [])).to eq(os)
+      expect(OptParseGen.parse!(os, [])).to eq(os)
+    end
+
+    it 'should take options' do
+      args = [os_collide, [], ignore_collisions: true]
+      expect(OptParseGen.parse(*args)).to eq(os_collide)
+      expect(OptParseGen.parse!(*args)).to eq(os_collide)
+    end
+
+    it 'should parse arguments' do
+      ostruct = os.dup
+      ostruct.bool = false
+      ostruct.freeze
+      expect(OptParseGen.parse(os, ['--no-bool'])).to eq(ostruct)
+      expect(OptParseGen.parse!(os, ['--no-bool'])).to eq(ostruct)
+    end
+  end
 end

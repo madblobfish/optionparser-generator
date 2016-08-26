@@ -101,6 +101,22 @@ module OptionParserGenerator
       @out
     end
   end
+
+  # Shorthand when parsing is only needed once.
+  #
+  # Generates an OptionParser and calls parse on it
+  # @see OptionParserGenerator#[]
+  # @return [OpenStruct]
+  def self.parse(ostruct, argv = nil, **opt)
+    self[ostruct, opt].parse(argv)
+  end
+
+  # Same as parse, removes parsed elements from argv
+  # @see OptionParserGenerator#parse
+  # @return [OpenStruct]
+  def self.parse!(ostruct, argv = ARGV, **opt)
+    self[ostruct, opt].parse!(argv)
+  end
 end
 # Object alias
 # @see OptionParserGenerator
