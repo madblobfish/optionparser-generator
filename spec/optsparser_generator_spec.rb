@@ -45,6 +45,7 @@ describe OptionParserGenerator do
     expect(OptParseGen(os).parse!([])).to eq(os)
   end
 
+  # modification safety
   it 'parse and parse! should not modify the defaults!' do
     ostruct = OpenStruct.new
     ostruct.val = 123

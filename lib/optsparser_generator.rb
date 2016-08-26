@@ -3,15 +3,17 @@ require 'optparse'
 
 # Small lib for generating an OptionParser from an OpenStruct
 module OptionParserGenerator
-  # raised when not given an OpenStruct
+  # Raised when not given an OpenStruct
   class WrongArgumentType < ArgumentError
   end
-  # raised when there are two boolean entries in the OpenStruct
+  # Raised when there are two boolean entries in the OpenStruct
   # one named no_xyz and one xyz
+  #
   # only raised when the option :ignore_collisions is not given
   class OptionCollision < ArgumentError
   end
 
+  # Does some sanity checks and prepares the OpenStruct
   # @todo preprocess data here instead of doing it adhoc
   # @todo raise more exceptions
   # @api private
@@ -22,7 +24,7 @@ module OptionParserGenerator
     ostruct.dup.freeze # not needed but makes development easier
   end
 
-  # does the magic
+  # Does the magic
   #
   # @todo write documentation :(
   # @todo split this up
@@ -82,7 +84,7 @@ module OptionParserGenerator
     optparser
   end
 
-  ## patch for OptionParser redefines parse and parse!
+  # patch for OptionParser redefines parse and parse!
   # @api private
   module OptParsePatch
     # @return [OpenStruct]
@@ -103,7 +105,8 @@ end
 
 # rubocop:disable Style/MethodName
 
-# global shorthand
+# Global shorthand
+#
 # alias to OptionParserGenerator[arg, opt]
 # @return [OptionParser]
 # @see OptionParserGenerator
