@@ -38,5 +38,7 @@ I choose two digit version numbers.
 The first digit indicates breaking changes.
 Second digit increases per release.
 
+# TODO
+* implement __proc (executes user code on trigger)
 
 Enjoy
