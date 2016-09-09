@@ -8,6 +8,10 @@ Gem::Specification.new do |s|
   s.files    = ['lib/optsparser_generator.rb']
   s.extra_rdoc_files = ['README.md', 'LICENSE.md']
   s.required_ruby_version = '>= 2.0.0'
+  s.add_development_dependency 'guard', '< 3', '>= 2.14.0'
+  s.add_development_dependency 'guard-bundler', '< 3', '>= 2.0'
+  s.add_development_dependency 'guard-rspec', '< 5', '>= 4.7.3'
+  s.add_development_dependency 'guard-yard', '< 3', '>= 2.0'
   s.add_development_dependency 'rake', '< 12', '>= 11.2.0'
   s.add_development_dependency 'rspec', '< 4', '~> 3.5.0'
   s.add_development_dependency 'rubocop', '~> 0'
