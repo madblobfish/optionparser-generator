@@ -1,7 +1,7 @@
 language: ruby
 rvm:
   - ruby-head
-  - 2.4.0-preview1
+  - 2.4.0-preview2
   - 2.3
   - 2.2
   - 2.1
@@ -9,5 +9,6 @@ rvm:
 matrix:
   allow_failures:
   - rvm: 2.3
+  - rvm: 2.4.0-preview2
   - rvm: ruby-head
 bundler_args: --without mutant
