@@ -3,6 +3,9 @@ require 'optparse'
 
 # Small lib for generating an OptionParser from an OpenStruct
 module OptionParserGenerator
+  # Special postfixes for Hash keys
+  SPECIAL_POSTFIXES = ['--help', '--values', '--short', '--class', '--proc'].freeze
+
   # Raised when not given an OpenStruct
   class WrongArgumentType < ArgumentError
   end
@@ -13,6 +16,14 @@ module OptionParserGenerator
   class OptionCollision < ArgumentError
   end
 
+  # utility methods
+  module OpenStructExtension
+    # extracts a special value from the openstruct
+    def special_value(key, string)
+      self["#{key}__#{string}"]
+    end
+  end
+
   # Does some sanity checks and prepares the OpenStruct
   # @todo preprocess data here instead of doing it adhoc
   # @todo raise more exceptions
@@ -21,7 +32,9 @@ module OptionParserGenerator
     unless ostruct.is_a?(OpenStruct)
       raise WrongArgumentType, 'needs an OpenStruct'
     end
-    ostruct.dup.freeze # not needed but makes development easier
+    ostruct = ostruct.dup
+    ostruct.extend(OpenStructExtension)
+    ostruct.freeze # freeze is not needed but makes development easier
   end
 
   # Does the magic
@@ -37,38 +50,35 @@ module OptionParserGenerator
     optparser = OptionParser.new do |opts|
       defaults.each_pair do |key, val|
         trigger = key.to_s.tr('_', '-')
-        next if trigger.end_with?('--help', '--values', '--short', '--class')
+        next if trigger.end_with?(*SPECIAL_POSTFIXES)
 
-        help = "#{defaults["#{key}__help"]} (Default: #{val})"
-        values = defaults["#{key}__values"] || []
-        short = defaults["#{key}__short"] || ''
-        arguments = []
-        arguments << help
-        arguments << "-#{short}" unless short.empty?
+        arguments = generate_arguments(defaults, key, val)
         case val
         when FalseClass, TrueClass
           if trigger.start_with?('no-')
-            trigger[0..2] = ''
-            if defaults.each_pair.map { |v| v.first.to_s }.include?(trigger) && !options[:ignore_collisions]
-              raise OptionCollision, "on #{key}"
-            end
+            trigger.gsub!(/\Ano-/, '') # removes no- prefixes
+            check_collisions(trigger, key, defaults) unless options[:ignore_collisions]
           end
-          opts.on("--[no-]#{trigger}", *arguments) do |b|
-            out = opts.instance_variable_get(:@out)
-            out[key] =
-              if key.to_s.start_with?('no_')
-                !b
-              else
-                b
-              end
+          arguments.unshift "--[no-]#{trigger}"
+          block = proc do |bool|
+            # inverted when it starts with no_
+            key.to_s.start_with?('no_') ^ bool
           end
         else
-          arguments.push defaults["#{key}__class"] || (val.class.equal?(Fixnum) ? Integer : val.class)
+          arguments.push defaults.special_value(key, 'class') || (val.class.equal?(Fixnum) ? Integer : val.class)
+          values = defaults.special_value(key, 'values') || []
           arguments << values if values.any?
-          opts.on("--#{trigger}=ARG", *arguments) do |str|
-            out = opts.instance_variable_get(:@out)
-            out[key] = str
+          arguments.unshift "--#{trigger}=ARG"
+          block = proc do |str|
+            str
           end
+        end
+        if (proc = defaults.special_value(key, 'proc'))
+          block = proc
+        end
+        opts.on(*arguments) do |arg|
+          out = opts.instance_variable_get(:@out)
+          out[key] = block.call(arg)
         end
       end
 
@@ -81,7 +91,25 @@ module OptionParserGenerator
     # add default values
     optparser.instance_variable_set(:@defaults, defaults)
     optparser.extend(OptParsePatch)
-    optparser
+  end
+
+  def self.generate_arguments(defaults, key, val)
+    short = defaults.special_value(key, 'short') || ''
+    if short.length > 1
+      raise ArgumentError, 'short is too long, it has to be only one character'
+    end
+
+    help = "#{defaults.special_value(key, 'help')} (Default: #{val})"
+
+    arguments = [help]
+    arguments << "-#{short}" unless short.empty?
+    arguments
+  end
+
+  def self.check_collisions(trigger, key, defaults)
+    if defaults.each_pair.map { |v| v.first.to_s }.include?(trigger)
+      raise OptionCollision, "on #{key}"
+    end
   end
 
   # patch for OptionParser redefines parse and parse!
@@ -107,7 +135,7 @@ module OptionParserGenerator
   # Generates an OptionParser and calls parse on it
   # @see OptionParserGenerator#[]
   # @return [OpenStruct]
-  def self.parse(ostruct, argv = nil, **opt)
+  def self.parse(ostruct, argv, **opt)
     self[ostruct, opt].parse(argv)
   end
 

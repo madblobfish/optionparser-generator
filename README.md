@@ -11,7 +11,7 @@ Small gem which generates an OptionParser object from an OpenStruct.
 # Usage
 ```ruby
 require 'optsparser_generator'
-# step one define OpenStruct with default values
+# step one define OpenStruct with default and special values
 os = OpenStruct.new
 os.default = 'value'
 os.val = 123
@@ -20,11 +20,19 @@ os.val__class = Numeric
 os.bool = true
 os.bool__help = 'description of argument'
 os.bool__short = 'b'
+os.test = "don't know"
+os.test_proc = Proc.new do |value|
+	puts value
+	"some-#{value}-conversion"
+end
 os.freeze
 
 # step two generate OptionParser
 opt_parser = OptParseGen(os)
 opt_parser = OptionParserGenerator(os)
+opt_parser.parse!(ARGV)
+# or parse options directly
+OptParseGen.parse(os) # takes ARGV or an array
 ```
 
 ## Special values
@@ -32,13 +40,11 @@ opt_parser = OptionParserGenerator(os)
 * __values	defines possible values in an Array
 * __short 	defines the short trigger
 * __class 	defines the Class which OptionParser then tries to coerce to
+* __proc 	a Proc which will be executed to compute the value
 
 # Version numbers
 I choose two digit version numbers.
 The first digit indicates breaking changes.
 Second digit increases per release.
-
-# TODO
-* implement __proc (executes user code on trigger)
 
 Enjoy

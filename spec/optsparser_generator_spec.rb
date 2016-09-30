@@ -42,28 +42,30 @@ describe OptionParserGenerator do
   end
 
   it 'parse and parse! should return the defaults if not overridden' do
-    expect(OptParseGen.parse(os)).to eq(os)
+    expect(OptParseGen.parse(os, [])).to eq(os)
     expect(OptParseGen.parse!(os, [])).to eq(os)
   end
 
-  # modification safety
-  it 'parse and parse! should not modify the defaults!' do
-    ostruct = OpenStruct.new
-    ostruct.val = 123
-    optparser = OptParseGen(ostruct)
-    expect(optparser.parse(['--val=1']).val).to eq(1)
-    expect(optparser.parse([]).val).to eq(123)
-    expect(optparser.parse(['--val=3']).val).to eq(3)
-    expect(optparser.parse([]).val).to eq(123)
-    expect(ostruct.val).to eq(123)
-  end
+  context 'parse & parse!' do
+    # modification safety
+    it 'should not modify the defaults' do
+      ostruct = OpenStruct.new
+      ostruct.val = 123
+      optparser = OptParseGen(ostruct)
+      expect(optparser.parse(['--val=1']).val).to eq(1)
+      expect(optparser.parse([]).val).to eq(123)
+      expect(optparser.parse(['--val=3']).val).to eq(3)
+      expect(optparser.parse([]).val).to eq(123)
+      expect(ostruct.val).to eq(123)
+    end
 
-  it 'should not take in later modifications of the input OpenStruct' do
-    ostruct = OpenStruct.new
-    ostruct.val = 123
-    optparser = OptParseGen(ostruct)
-    ostruct.val = 12
-    expect(optparser.parse([]).val).to eq(123)
+    it 'should not take in later modifications of the input OpenStruct' do
+      ostruct = OpenStruct.new
+      ostruct.val = 123
+      optparser = OptParseGen(ostruct)
+      ostruct.val = 12
+      expect(optparser.parse([]).val).to eq(123)
+    end
   end
 
   # agrument handling
@@ -77,7 +79,10 @@ describe OptionParserGenerator do
       nil,
       Object.new
     ].each do |obj|
-      expect { OptParseGen(obj) }.to raise_error(OptionParserGenerator::WrongArgumentType, 'needs an OpenStruct')
+      expect{ OptParseGen(obj) }.to raise_error(
+        OptionParserGenerator::WrongArgumentType,
+        'needs an OpenStruct'
+      )
     end
   end
 
@@ -87,12 +92,22 @@ describe OptionParserGenerator do
     ostruct.val = 1
     ostruct.val__help = 'help'
     ostruct.val__values = [1, 2, 3]
-    ostruct.val__short  = 's'
+    ostruct.val__short = 's'
+    ostruct.val__proc = 'too lazy'
     optparser = OptParseGen(ostruct)
-    expect { optparser.parse(['--val--class']) }.to raise_error(OptionParser::InvalidOption)
-    expect { optparser.parse(['--val--help']) }.to raise_error(OptionParser::InvalidOption)
-    expect { optparser.parse(['--val--values']) }.to raise_error(OptionParser::InvalidOption)
-    expect { optparser.parse(['--val--short']) }.to raise_error(OptionParser::InvalidOption)
+    OptParseGen::SPECIAL_POSTFIXES.each do |post|
+      expect{ optparser.parse(["--val#{post}"]) }.to raise_error(OptionParser::InvalidOption)
+    end
+  end
+
+  it 'should raise an error when more than one letter is given to __short' do
+    ostruct = OpenStruct.new
+    ostruct.bool = true
+    ostruct.bool__short = 'lo' # too long
+    expect{ OptParseGen(ostruct) }.to raise_error(
+      ArgumentError,
+      'short is too long, it has to be only one character'
+    )
   end
 
   it 'should should disallow setting other values than in __values' do
@@ -103,8 +118,8 @@ describe OptionParserGenerator do
     ostruct.string__values = %w(a b c)
     ostruct.freeze
     optparser = OptParseGen(ostruct)
-    expect { optparser.parse(['--int=3']) }.to raise_error(OptionParser::InvalidArgument)
-    expect { optparser.parse(['--string=d']) }.to raise_error(OptionParser::InvalidArgument)
+    expect{ optparser.parse(['--int=3']) }.to raise_error(OptionParser::InvalidArgument)
+    expect{ optparser.parse(['--string=d']) }.to raise_error(OptionParser::InvalidArgument)
   end
 
   it 'should work with Classes' do
@@ -126,82 +141,41 @@ describe OptionParserGenerator do
     expect(optparser.parse(['--string=bla']).string).to eq('bla').and be_a(String)
   end
 
-  # special boolean tests
-  describe 'booleans' do
-    it 'should generate an trigger --bool for negating the default' do
-      expect(OptParseGen.parse(os_no, ['--bool']).no_bool).to be_falsy
-    end
-
-    it 'should generate an trigger --bool for reestablishing the default' do
-      expect(OptParseGen.parse(os_no, ['--no-bool']).no_bool).to be_truthy
-    end
-
-    it 'should work in general' do
-      optparser = OptParseGen(os)
-      result = os.dup
-      expect(optparser.parse(['-b'])).to eq(result)
-      expect(optparser.parse(['--bool'])).to eq(result)
-      result.bool = false
-      expect(optparser.parse(['--no-bool'])).to eq(result)
-      expect(optparser.parse(['--no-bool']).bool).not_to eq(optparser.parse(['--bool']).bool) # just making sure
-      result.bool = true
-      expect(optparser.parse(['--bool'])).to eq(result)
-    end
-
-    it 'colliding should be ignored when given :ignore_collisions option' do
-      optparser = OptParseGen(os_collide, ignore_collisions: true)
-      expect { optparser.parse(['--no-no-bool']) }.to raise_error(OptionParser::InvalidOption)
-    end
-
-    it 'should continue after collision when given :ignore_collisions option' do
-      optparser = OptParseGen(os_collide, ignore_collisions: true)
-      optparser.parse(['--zz=3'])
-      expect { optparser.parse(['--no-no-bool']) }.to raise_error(OptionParser::InvalidOption)
-    end
-
-    it 'should handle colliding no_ on boolean values' do
-      expect do
-        OptParseGen(os_collide)
-      end.to raise_error(OptionParserGenerator::OptionCollision, 'on no_bool')
-      expect do
-        OptParseGen(os_collide, ignore_collisions: false)
-      end.to raise_error(OptionParserGenerator::OptionCollision)
-    end
-  end
-
   # output interfaces
-  it 'should print usage and exit on --help' do
-    expect do
-      begin
-        OptParseGen.parse(OpenStruct.new, '--help')
-        fail
-      rescue SystemExit => e
-        expect(e.status).to eq(0)
-      end
-    end.to output("Usage: #{File.basename($0)} [options]\n    -h, --help\n").to_stdout
-  end
+  context 'predefined output functions' do
+    it 'should print usage and exit on --help' do
+      expect do
+        begin
+          OptParseGen.parse(OpenStruct.new, '--help')
+          fail
+        rescue SystemExit => e
+          expect(e.status).to eq(0)
+        end
+      end.to output("Usage: #{File.basename($PROGRAM_NAME)} [options]\n    -h, --help\n").to_stdout
+    end
 
-  it 'should write the default values into help' do
-    ostruct = OpenStruct.new # defining it here keeps the string constant
-    ostruct.bool = false
-    ostruct.bool__short = 'b'
-    ostruct.bool__help = 'yes'
-    ostruct.int = 12
-    ostruct.string = 'yep'
-    expect do
-      begin
-        OptParseGen.parse(ostruct, '--help')
-        fail
-      rescue SystemExit => e
-        expect(e.status).to eq(0)
-      end
-    end.to output(
-      "Usage: #{File.basename($0)} [options]\n    -b, --[no-]bool                  yes (Default: false)\n        --int=ARG                     (Default: 12)\n        --string=ARG                  (Default: yep)\n    -h, --help\n"
-    ).to_stdout
+    it 'should write the default values into help' do
+      ostruct = OpenStruct.new # defining it here keeps the string constant
+      ostruct.bool = false
+      ostruct.bool__short = 'b'
+      ostruct.bool__help = 'yes'
+      ostruct.int = 12
+      ostruct.string = 'yep'
+      expect do
+        begin
+          OptParseGen.parse(ostruct, '--help')
+          fail
+        rescue SystemExit => e
+          expect(e.status).to eq(0)
+        end
+      end.to output(
+        "Usage: #{File.basename($PROGRAM_NAME)} [options]\n    -b, --[no-]bool                  yes (Default: false)\n        --int=ARG                     (Default: 12)\n        --string=ARG                  (Default: yep)\n    -h, --help\n"
+      ).to_stdout
+    end
   end
 
   # shorthands for direct parsing
-  describe 'OptParseGen.parse & OptParseGen.parse!' do
+  describe 'OptParseGen' do
     it 'should basically do what OptParseGen[].parse/parse! do' do
       expect(OptParseGen.parse(os, [])).to eq(os)
       expect(OptParseGen.parse!(os, [])).to eq(os)
@@ -219,6 +193,80 @@ describe OptionParserGenerator do
       ostruct.freeze
       expect(OptParseGen.parse(os, ['--no-bool'])).to eq(ostruct)
       expect(OptParseGen.parse!(os, ['--no-bool'])).to eq(ostruct)
+    end
+
+    context 'parse' do
+      it 'parse should not change the arguments' do
+        arr = ['--bool']
+        expect{ OptParseGen.parse(os, arr) }.not_to change{ arr }
+      end
+    end
+    context 'parse!' do
+      it 'should take and modify ARGV when given no arguments' do
+        ostruct = OpenStruct.new
+        ostruct.a = true
+        stub_const('ARGV', ['-a'])
+        expect{ OptParseGen.parse!(ostruct) }.to change{ ARGV }.to([])
+      end
+    end
+  end
+
+  context 'given a boolean default value' do
+    it 'should generate triggers --no-X and --X' do
+      expect(OptParseGen.parse(os_no, ['--bool']).no_bool).to be_falsy
+      expect(OptParseGen.parse(os_no, ['--no-bool']).no_bool).to be_truthy
+    end
+
+    it 'should work in general' do
+      optparser = OptParseGen(os)
+      result = os.dup
+      expect(optparser.parse(['-b'])).to eq(result)
+      expect(optparser.parse(['--bool'])).to eq(result)
+      result.bool = false
+      expect(optparser.parse(['--no-bool'])).to eq(result)
+      expect(optparser.parse(['--no-bool']).bool).not_to eq(optparser.parse(['--bool']).bool) # just making sure
+      result.bool = true
+      expect(optparser.parse(['--bool'])).to eq(result)
+    end
+
+    # collisions are when defaults like no_X and X exist
+    it 'colliding should be ignored when given :ignore_collisions option' do
+      optparser = OptParseGen(os_collide, ignore_collisions: true)
+      expect{ optparser.parse(['--no-no-bool']) }.to raise_error(OptionParser::InvalidOption)
+    end
+
+    it 'should continue after collision when given :ignore_collisions option' do
+      optparser = OptParseGen(os_collide, ignore_collisions: true)
+      optparser.parse(['--zz=3'])
+      expect{ optparser.parse(['--no-no-bool']) }.to raise_error(OptionParser::InvalidOption)
+    end
+
+    it 'should handle colliding no_ on boolean values' do
+      expect do
+        OptParseGen(os_collide)
+      end.to raise_error(OptionParserGenerator::OptionCollision, 'on no_bool')
+      expect do
+        OptParseGen(os_collide, ignore_collisions: false)
+      end.to raise_error(OptionParserGenerator::OptionCollision)
+    end
+  end
+
+  context 'proc special values' do
+    it 'should handle proc special values' do
+      ostruct = os.dup
+      ostruct.bool__proc = proc do |bool|
+        puts bool
+      end
+      expect{ OptParseGen.parse(ostruct, ['--bool']) }.to output("true\n").to_stdout
+      expect{ OptParseGen.parse(ostruct, ['--no-bool']) }.to output("false\n").to_stdout
+    end
+
+    it 'return values should set the value of the option' do
+      ostruct = os.dup
+      ostruct.bool__proc = proc do ||
+        123
+      end
+      expect(OptParseGen.parse(ostruct, ['--bool']).bool).to eq(123)
     end
   end
 end
