@@ -11,4 +11,4 @@ matrix:
   - rvm: 2.3
   - rvm: 2.4.0-preview2
   - rvm: ruby-head
-bundler_args: --without mutant
+bundler_args: --without mutant --without guard
