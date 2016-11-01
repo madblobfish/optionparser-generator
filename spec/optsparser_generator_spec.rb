@@ -126,7 +126,7 @@ describe OptionParserGenerator do
     ostruct = OpenStruct.new
     ostruct.int = 12
     ostruct.int__class = Integer
-    ostruct.num = 12
+    ostruct.num = 11
     ostruct.num__class = Numeric
     ostruct.regexp = /\s/
     ostruct.regexp__class = Regexp
@@ -139,39 +139,6 @@ describe OptionParserGenerator do
     expect(optparser.parse(['--regexp=\w']).regexp).to eq(/\w/).and be_a(Regexp)
     expect(optparser.parse(['--regexp=/11.1/']).regexp).to eq(/11.1/).and be_a(Regexp)
     expect(optparser.parse(['--string=bla']).string).to eq('bla').and be_a(String)
-  end
-
-  # output interfaces
-  context 'predefined output functions' do
-    it 'should print usage and exit on --help' do
-      expect do
-        begin
-          OptParseGen.parse(OpenStruct.new, '--help')
-          fail
-        rescue SystemExit => e
-          expect(e.status).to eq(0)
-        end
-      end.to output("Usage: #{File.basename($PROGRAM_NAME)} [options]\n    -h, --help\n").to_stdout
-    end
-
-    it 'should write the default values into help' do
-      ostruct = OpenStruct.new # defining it here keeps the string constant
-      ostruct.bool = false
-      ostruct.bool__short = 'b'
-      ostruct.bool__help = 'yes'
-      ostruct.int = 12
-      ostruct.string = 'yep'
-      expect do
-        begin
-          OptParseGen.parse(ostruct, '--help')
-          fail
-        rescue SystemExit => e
-          expect(e.status).to eq(0)
-        end
-      end.to output(
-        "Usage: #{File.basename($PROGRAM_NAME)} [options]\n    -b, --[no-]bool                  yes (Default: false)\n        --int=ARG                     (Default: 12)\n        --string=ARG                  (Default: yep)\n    -h, --help\n"
-      ).to_stdout
-    end
   end
 
   # shorthands for direct parsing
@@ -254,7 +221,7 @@ describe OptionParserGenerator do
   context 'proc special values' do
     it 'should handle proc special values' do
       ostruct = os.dup
-      ostruct.bool__proc = proc do |bool|
+      ostruct.bool__proc = lambda do |bool|
         puts bool
       end
       expect{ OptParseGen.parse(ostruct, ['--bool']) }.to output("true\n").to_stdout
@@ -263,10 +230,44 @@ describe OptionParserGenerator do
 
     it 'return values should set the value of the option' do
       ostruct = os.dup
-      ostruct.bool__proc = proc do ||
+      ostruct.bool__proc = lambda do |_|
         123
       end
       expect(OptParseGen.parse(ostruct, ['--bool']).bool).to eq(123)
+    end
+  end
+
+  # output interfaces
+  context 'predefined output functions' do
+    it 'should print usage and exit on --help' do
+      expect do
+        begin
+          OptParseGen.parse(OpenStruct.new, '--help')
+          fail
+        rescue SystemExit => e
+          expect(e.status).to eq(0)
+        end
+      end.to output("Usage: #{File.basename($PROGRAM_NAME)} [options]\n    -h, --help\n").to_stdout
+    end
+
+    it 'should write the default values into help' do
+      ostruct = OpenStruct.new # defining it here keeps the string constant
+      ostruct.bool = false
+      ostruct.bool__short = 'b'
+      ostruct.bool__help = 'yes'
+      ostruct.int = 12
+      ostruct.string = 'yep'
+      expect do
+        begin
+          # also tests the default value for generate_no_help
+          OptParseGen.parse(ostruct, '--help', generate_no_help: false)
+          fail
+        rescue SystemExit => e
+          expect(e.status).to eq(0)
+        end
+      end.to output(
+        "Usage: #{File.basename($PROGRAM_NAME)} [options]\n    -b, --[no-]bool                  yes (Default: false)\n        --int=ARG                     (Default: 12)\n        --string=ARG                  (Default: yep)\n    -h, --help\n"
+      ).to_stdout
     end
   end
 
