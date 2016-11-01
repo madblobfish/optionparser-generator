@@ -60,6 +60,7 @@ module OptionParserGenerator
         arguments = generate_arguments(defaults, key, val)
         case val
         when FalseClass, TrueClass
+          uneven_no = /\Ano(-no-no)*-(?!no)/ =~ trigger
           if trigger.start_with?('no-')
             trigger.gsub!(/\Ano-/, '') # removes no- prefixes
             check_collisions(trigger, key, defaults) unless options[:ignore_collisions]
@@ -67,7 +68,7 @@ module OptionParserGenerator
           arguments.unshift "--[no-]#{trigger}"
           block = proc do |bool|
             # inverted when it starts with no_
-            key.to_s.start_with?('no_') ^ bool
+            bool ^ uneven_no
           end
         else
           arguments.push defaults.special_value(key, 'class') || (val.class.equal?(Fixnum) ? Integer : val.class)
