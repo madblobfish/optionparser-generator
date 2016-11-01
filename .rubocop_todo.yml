@@ -16,3 +16,11 @@ Style/SignalException:
 
 Style/SpecialGlobalVars:
   EnforcedStyle: use_perl_names
+  Exclude:
+    - 'spec/optsparser_generator_spec.rb'
+
+Lint/UnifiedInteger:
+  Enabled: false
+
+Style/SpaceBeforeBlockBraces:
+  EnforcedStyle: 'no_space'
