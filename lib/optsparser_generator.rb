@@ -17,12 +17,14 @@ module OptionParserGenerator
   end
 
   # utility methods
+  # @api private
   module OpenStructExtension
     # extracts a special value from the openstruct
     def special_value(key, string)
       self["#{key}__#{string}"]
     end
   end
+  private_constant :OpenStructExtension
 
   # Does some sanity checks and prepares the OpenStruct
   # @todo preprocess data here instead of doing it adhoc
@@ -36,6 +38,7 @@ module OptionParserGenerator
     ostruct.extend(OpenStructExtension)
     ostruct.freeze # freeze is not needed but makes development easier
   end
+  private_class_method :handle_arguments
 
   # Does the magic
   #
@@ -93,6 +96,9 @@ module OptionParserGenerator
     optparser.extend(OptParsePatch)
   end
 
+  # returns an array of helptext and
+  # if set the short version of trigger
+  # @api private
   def self.generate_arguments(defaults, key, val)
     short = defaults.special_value(key, 'short') || ''
     if short.length > 1
@@ -105,12 +111,15 @@ module OptionParserGenerator
     arguments << "-#{short}" unless short.empty?
     arguments
   end
+  private_class_method :generate_arguments
 
+  # @api private
   def self.check_collisions(trigger, key, defaults)
     if defaults.each_pair.map { |v| v.first.to_s }.include?(trigger)
       raise OptionCollision, "on #{key}"
     end
   end
+  private_class_method :check_collisions
 
   # patch for OptionParser redefines parse and parse!
   # @api private
@@ -129,6 +138,7 @@ module OptionParserGenerator
       @out
     end
   end
+  private_constant :OptParsePatch
 
   # Shorthand when parsing is only needed once.
   #
