@@ -4,7 +4,13 @@ require 'optparse'
 # Small lib for generating an OptionParser from an OpenStruct
 module OptionParserGenerator
   # Special postfixes for Hash keys
-  SPECIAL_POSTFIXES = ['--help', '--values', '--short', '--class', '--proc'].freeze
+  SPECIAL_POSTFIXES = [
+    '--help',
+    '--values',
+    '--short',
+    '--class',
+    '--proc'
+  ].freeze
 
   # Raised when not given an OpenStruct
   class WrongArgumentType < ArgumentError
@@ -71,9 +77,13 @@ module OptionParserGenerator
             bool ^ uneven_no
           end
         else
-          arguments.push defaults.special_value(key, 'class') || (val.class.equal?(Fixnum) ? Integer : val.class)
-          values = defaults.special_value(key, 'values') || []
-          arguments << values if values.any?
+          klass = val.class
+          klass = klass.equal?(Fixnum) ? Integer : klass
+          klass = defaults.special_value(key, 'class') || klass
+          arguments.push klass
+
+          values = defaults.special_value(key, 'values')
+          arguments.push values if values
           arguments.unshift "--#{trigger}=ARG"
           block = proc do |str|
             str
@@ -83,8 +93,7 @@ module OptionParserGenerator
           block = proc
         end
         opts.on(*arguments) do |arg|
-          out = opts.instance_variable_get(:@out)
-          out[key] = block.call(arg)
+          opts.instance_variable_get(:@out)[key] = block.call(arg)
         end
       end
 
@@ -112,15 +121,17 @@ module OptionParserGenerator
 
     help = "#{defaults.special_value(key, 'help')} (Default: #{val})"
 
-    arguments = [help]
-    arguments << "-#{short}" unless short.empty?
-    arguments
+    if short.empty?
+      [help]
+    else
+      [help, "-#{short}"]
+    end
   end
   private_class_method :generate_arguments
 
   # @api private
   def self.check_collisions(trigger, key, defaults)
-    if defaults.each_pair.map { |v| v.first.to_s }.include?(trigger)
+    if defaults.each_pair.map{ |v| v.first.to_s }.include?(trigger)
       raise OptionCollision, "on #{key}"
     end
   end
