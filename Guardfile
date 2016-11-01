@@ -4,8 +4,8 @@ ignore(/.yarddoc/)
 
 guard :rspec, cmd: 'rspec' do
   watch(%r{^spec/.+_spec\.rb$})
-  watch(%r{^lib/(.+)\.rb$}) { |m| "spec/#{m[1]}_spec.rb" }
-  watch('spec/spec_helper.rb') { 'spec' }
+  watch(%r{^lib/(.+)\.rb$}){ |m| "spec/#{m[1]}_spec.rb" }
+  watch('spec/spec_helper.rb'){ 'spec' }
 end
 
 guard :yard, server: false do
@@ -20,8 +20,8 @@ guard :bundler do
   helper = Guard::Bundler::Verify.new
 
   files = ['Gemfile']
-  files += Dir['*.gemspec'] if files.any? { |f| helper.uses_gemspec?(f) }
+  files += Dir['*.gemspec'] if files.any?{ |f| helper.uses_gemspec?(f) }
 
   # Assume files are symlinked from somewhere
-  files.each { |file| watch(helper.real_path(file)) }
+  files.each{ |file| watch(helper.real_path(file)) }
 end
