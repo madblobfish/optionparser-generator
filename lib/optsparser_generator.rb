@@ -46,7 +46,9 @@ module OptionParserGenerator
   # @todo split this up
   # @param ostruct [OpenStruct] Default values with special values
   # @param options [Hash]
-  # @option options [Boolean] :ignore_collisions ignore bool key collisions see OptionCollision
+  # @option options [Boolean]
+  #   :ignore_collisions ignore bool key collisions see OptionCollision
+  #   :generate_no_help when set to true donesn't generates help command
   def self.[](ostruct, **options)
     defaults = handle_arguments(ostruct)
 
@@ -85,9 +87,11 @@ module OptionParserGenerator
         end
       end
 
-      opts.on('-h', '--help') do
-        puts opts
-        exit
+      unless options[:generate_no_help]
+        opts.on('-h', '--help') do
+          puts opts
+          exit
+        end
       end
     end
 

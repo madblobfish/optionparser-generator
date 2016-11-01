@@ -269,4 +269,17 @@ describe OptionParserGenerator do
       expect(OptParseGen.parse(ostruct, ['--bool']).bool).to eq(123)
     end
   end
+
+  context 'options' do
+    it 'should generate a help trigger unless given the generate_no_help option' do
+      optparser = OptParseGen(os, generate_no_help: true)
+      expect do
+        begin
+          optparser.parse(['--help'])
+        rescue SystemExit => e
+          expect(e.status).to eq(0)
+        end
+      end.to output("Usage: #{File.basename($PROGRAM_NAME)} [options]\n        --default=ARG                 (Default: value)\n        --val=ARG                     (Default: 123)\n    -b, --[no-]bool                  description of argument (Default: true)\n").to_stdout
+    end
+  end
 end
