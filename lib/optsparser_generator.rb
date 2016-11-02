@@ -72,7 +72,7 @@ module OptionParserGenerator
             check_collisions(trigger, key, defaults) unless options[:ignore_collisions]
           end
           arguments.unshift "--[no-]#{trigger}"
-          block = proc do |bool|
+          block = lambda do |bool|
             # inverted when it starts with no_
             bool ^ uneven_no
           end
@@ -85,7 +85,7 @@ module OptionParserGenerator
           values = defaults.special_value(key, 'values')
           arguments.push values if values
           arguments.unshift "--#{trigger}=ARG"
-          block = proc do |str|
+          block = lambda do |str|
             str
           end
         end
