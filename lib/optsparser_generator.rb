@@ -78,7 +78,7 @@ module OptionParserGenerator
           end
         else
           klass = val.class
-          klass = klass.equal?(Fixnum) ? Integer : klass
+          klass = val.is_a?(Integer) ? Integer : klass
           klass = defaults.special_value(key, 'class') || klass
           arguments.push klass
 
