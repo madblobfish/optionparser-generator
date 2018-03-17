@@ -21,7 +21,7 @@ os.bool = true
 os.bool__help = 'description of argument'
 os.bool__short = 'b'
 os.test = "don't know"
-os.test_proc = Proc.new do |value|
+os.test__proc = Proc.new do |value|
 	puts value
 	"some-#{value}-conversion"
 end
