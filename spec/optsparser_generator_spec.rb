@@ -149,9 +149,9 @@ describe OptionParserGenerator do
     end
 
     it 'should take options' do
-      args = [os_collide, [], ignore_collisions: true]
-      expect(OptParseGen.parse(*args)).to eq(os_collide)
-      expect(OptParseGen.parse!(*args)).to eq(os_collide)
+      args = [os_collide, []]
+      expect(OptParseGen.parse(*args, ignore_collisions: true)).to eq(os_collide)
+      expect(OptParseGen.parse!(*args, ignore_collisions: true)).to eq(os_collide)
     end
 
     it 'should parse arguments' do
@@ -228,7 +228,7 @@ describe OptionParserGenerator do
       expect{ OptParseGen.parse(ostruct, ['--no-bool']) }.to output("false\n").to_stdout
     end
 
-    it 'return values should set the value of the option' do
+    it 'should return values should set the value of the option' do
       ostruct = os.dup
       ostruct.bool__proc = lambda do |_|
         123

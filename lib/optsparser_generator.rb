@@ -141,14 +141,14 @@ module OptionParserGenerator
   # @api private
   module OptParsePatch
     # @return [OpenStruct]
-    def parse!(*params)
+    def parse!(*params, **opts)
       @out = @defaults.dup
       super
       @out
     end
 
     # @return [OpenStruct]
-    def parse(*params)
+    def parse(*params, **opts)
       @out = @defaults.dup
       super
       @out
@@ -162,14 +162,14 @@ module OptionParserGenerator
   # @see OptionParserGenerator#[]
   # @return [OpenStruct]
   def self.parse(ostruct, argv, **opt)
-    self[ostruct, opt].parse(argv)
+    self[ostruct, **opt].parse(argv)
   end
 
   # Same as parse, removes parsed elements from argv
   # @see OptionParserGenerator#parse
   # @return [OpenStruct]
   def self.parse!(ostruct, argv = ARGV, **opt)
-    self[ostruct, opt].parse!(argv)
+    self[ostruct, **opt].parse!(argv)
   end
 end
 # Object alias
@@ -184,7 +184,7 @@ OptParseGen = OptionParserGenerator
 # @return [OptionParser]
 # @see OptionParserGenerator
 def OptionParserGenerator(arg, **opt)
-  OptionParserGenerator[arg, opt]
+  OptionParserGenerator[arg, **opt]
 end
 alias OptParseGen OptionParserGenerator
 
