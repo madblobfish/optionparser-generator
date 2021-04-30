@@ -241,6 +241,32 @@ describe OptionParserGenerator do
     end
   end
 
+  context 'required special values' do
+    it 'should raise when a required value is missing' do
+      ostruct = OpenStruct.new
+      ostruct.bool = true
+      ostruct.val = 123
+      ostruct.val__required = true
+      expect{ OptParseGen.parse(ostruct, ['--bool']) }.to raise_error(
+        OptionParser::MissingArgument,
+        'missing argument: val'
+      )
+      expect{ OptParseGen.parse(ostruct, []) }.to raise_error(
+        OptionParser::MissingArgument,
+        'missing argument: val'
+      )
+    end
+
+    it 'should not raise when a required value is used' do
+      ostruct = OpenStruct.new
+      ostruct.bool = true
+      ostruct.val = 123
+      ostruct.val__required = true
+      expect(OptParseGen.parse(ostruct, ['--val=1']).val).to eq(1)
+      expect(OptParseGen.parse(ostruct, ['--val=1', '--bool']).val).to eq(1)
+    end
+  end
+
   # output interfaces
   context 'predefined output functions' do
     it 'should print usage and exit on --help' do

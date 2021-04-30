@@ -5,11 +5,12 @@ require 'optparse'
 module OptionParserGenerator
   # Special postfixes for Hash keys
   SPECIAL_POSTFIXES = [
-    '--help',
-    '--values',
-    '--short',
     '--class',
-    '--proc'
+    '--help',
+    '--proc',
+    '--required',
+    '--short',
+    '--values',
   ].freeze
 
   # Raised when not given an OpenStruct
@@ -59,6 +60,7 @@ module OptionParserGenerator
     defaults = handle_arguments(ostruct)
 
     optparser = OptionParser.new do |opts|
+      opts.instance_variable_set(:@required, {})
       defaults.each_pair do |key, val|
         trigger = key.to_s.tr('_', '-')
         next if trigger.end_with?(*SPECIAL_POSTFIXES)
@@ -93,7 +95,11 @@ module OptionParserGenerator
           block = proc
         end
         opts.on(*arguments) do |arg|
+          opts.instance_variable_get(:@required)[key] = true
           opts.instance_variable_get(:@out)[key] = block.call(arg)
+        end
+        if defaults.special_value(key, 'required')
+          opts.instance_variable_get(:@required)[key] = false
         end
       end
 
@@ -144,6 +150,7 @@ module OptionParserGenerator
     def parse!(*params, **opts)
       @out = @defaults.dup
       super
+      @required.reject{|k,v|v}.each{|k,v|raise OptionParser::MissingArgument, k}
       @out
     end
 
@@ -151,6 +158,7 @@ module OptionParserGenerator
     def parse(*params, **opts)
       @out = @defaults.dup
       super
+      @required.reject{|k,v|v}.each{|k,v|raise OptionParser::MissingArgument, k}
       @out
     end
   end
