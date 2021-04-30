@@ -2,10 +2,10 @@ source 'https://rubygems.org'
 
 gemspec
 
-group :test do
-  gem 'simplecov', require: false
-  gem 'rcov', require: false
-end
+#group :test do
+#  gem 'simplecov', require: false
+#  gem 'rcov', require: false
+#end
 
 group :mutant do
   gem 'mutant', '>= 0.8.11'
