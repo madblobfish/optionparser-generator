@@ -100,6 +100,10 @@ describe OptionParserGenerator do
     end
   end
 
+  it 'should not prevent correct Invalid Option errors from happening' do
+    expect{ OptParseGen(OpenStruct.new).parse(["--unknown"]) }.to raise_error(OptionParser::InvalidOption)
+  end
+
   it 'should raise an error when more than one letter is given to __short' do
     ostruct = OpenStruct.new
     ostruct.bool = true
