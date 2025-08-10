@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.license  = 'AGPL-1.0'
   s.files    = ['lib/optsparser_generator.rb']
   s.extra_rdoc_files = ['README.md', 'LICENSE.md']
-  s.required_ruby_version = '>= 2.0.0'
+  s.required_ruby_version = '>= 2.4.0'
   s.add_development_dependency 'rake', '< 14', '>= 11.2.0'
   s.add_development_dependency 'rspec', '< 4', '>= 3.5.0'
   s.add_development_dependency 'rubocop'

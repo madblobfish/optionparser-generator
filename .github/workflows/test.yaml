@@ -10,21 +10,17 @@ jobs:
       matrix:
         os: ['ubuntu-latest']
         ruby: 
-          - 'head' # fails 2025-08-11, (error while loading shared libraries: libruby.so.3.5: cannot open shared object file: No such file or directory)
-          - '3.5' # works 2025-08-11
-          - '3.4' # works 2025-08-11
-          - '3.3' # works 2025-08-11
-          - '3.2' # works 2025-08-11
-          - '3.1' # works 2025-08-11
-          - '3.0' # works 2025-08-11
-          - '2.7' # works 2025-08-11
-          - '2.6' # works 2025-08-11
-          - '2.5' # works 2025-08-11
-          - '2.4' # works 2025-08-11
-          - '2.3' # fails 2025-08-11, super changed in newer versions
-          - '2.2' # fails 2025-08-11, interpreter broken?
-          - '2.1' # fails 2025-08-11, super changed in newer versions
-          - '2.0' # fails 2025-08-11, installing (bundle_without does not work for some reason)
+          - 'head'
+          - '3.5'
+          - '3.4'
+          - '3.3'
+          - '3.2'
+          - '3.1'
+          - '3.0'
+          - '2.7'
+          - '2.6'
+          - '2.5'
+          - '2.4'
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }}_${{ matrix.ruby }}
     env:
