@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name     = 'optsparser_generator'
-  s.version  = `git describe | sed 's/v//'`
+  s.version  = `git describe | sed -e 's/v//' -e 's/-.*//'`
   s.summary  = 'Generates OptionParser using an OpenStruct'
   s.author   = 'Marvin Zerulla'
   s.homepage = 'https://github.com/madblobfish/optionparser-generator'
@@ -15,6 +15,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'yard', '< 1', '>= 0.8'
 
   # std lib
-  # s.add_runtime_dependency 'ostruct'
+  s.add_runtime_dependency 'ostruct'
   # s.add_runtime_dependency 'optparse'
 end

@@ -1,0 +1,38 @@
+name: ruby test
+on:
+  push:
+    branches:
+      - master
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ['ubuntu-latest']
+        ruby: 
+          - 'head' # fails 2025-08-11, (error while loading shared libraries: libruby.so.3.5: cannot open shared object file: No such file or directory)
+          - '3.5' # works 2025-08-11
+          - '3.4' # works 2025-08-11
+          - '3.3' # works 2025-08-11
+          - '3.2' # works 2025-08-11
+          - '3.1' # works 2025-08-11
+          - '3.0' # works 2025-08-11
+          - '2.7' # works 2025-08-11
+          - '2.6' # works 2025-08-11
+          - '2.5' # works 2025-08-11
+          - '2.4' # works 2025-08-11
+          - '2.3' # fails 2025-08-11, super changed in newer versions
+          - '2.2' # fails 2025-08-11, interpreter broken?
+          - '2.1' # fails 2025-08-11, super changed in newer versions
+          - '2.0' # fails 2025-08-11, installing (bundle_without does not work for some reason)
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }}_${{ matrix.ruby }}
+    env:
+      BUNDLE_WITHOUT: 'guard bundler mutant rubocop'
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+        bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+    - run: bundle exec rspec
