@@ -15,4 +15,4 @@ test:
 style:
 	rubocop --config .rubocop_todo.yml
 mutant:
-	mutant -I lib --use rspec 'OptionParserGenerator'
+	bundle exec mutant run -I lib --require optsparser_generator --use rspec --usage opensource -- 'OptionParserGenerator'
