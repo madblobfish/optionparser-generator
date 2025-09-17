@@ -166,6 +166,17 @@ describe OptionParserGenerator do
       expect(OptParseGen.parse!(os, ['--no-bool'])).to eq(ostruct)
     end
 
+    it 'remove no_ prefixes' do
+      ostruct = os.dup
+      ostruct.no_no_bool = false
+      ostruct.freeze
+      ostruct_result = ostruct.dup
+      ostruct_result.delete_field(:no_no_bool)
+      ostruct_result.bool = true
+      expect(OptParseGen.parse(os, ['--bool'])).to eq(ostruct_result)
+      expect(OptParseGen.parse!(os, ['--bool'])).to eq(ostruct_result)
+    end
+
     context 'parse' do
       it 'parse should not change the arguments' do
         arr = ['--bool']
