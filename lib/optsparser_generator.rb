@@ -125,7 +125,11 @@ module OptionParserGenerator
       raise ArgumentError, 'short is too long, it has to be only one character'
     end
 
-    help = "#{defaults.special_value(key, 'help')} (Default: #{val})"
+    values = defaults.special_value(key, 'values')
+
+    help = defaults.special_value(key, 'help')
+    help ||= "one of: #{values.join(', ')}" if values
+    help = "#{help} (Default: #{val})"
 
     if short.empty?
       [help]

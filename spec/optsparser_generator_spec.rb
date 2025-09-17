@@ -299,6 +299,26 @@ describe OptionParserGenerator do
         "Usage: #{File.basename($PROGRAM_NAME)} [options]\n    -b, --[no-]bool                  yes (Default: false)\n        --int=ARG                     (Default: 12)\n        --string=ARG                  (Default: yep)\n    -h, --help\n"
       ).to_stdout
     end
+
+    it 'should fill in __help if not given using __values if available' do
+      ostruct = OpenStruct.new # defining it here keeps the string constant
+      ostruct.val = 'a'
+      ostruct.val__values = %w(a b c)
+      ostruct.notapplicable = 'no'
+      ostruct.notapplicable__values = %w(yes no)
+      ostruct.notapplicable__help = 'this overrides the fancy default'
+      expect do
+        begin
+          # also tests the default value for generate_no_help
+          OptParseGen.parse(ostruct, '--help', generate_no_help: false)
+          fail
+        rescue SystemExit => e
+          expect(e.status).to eq(0)
+        end
+      end.to output(
+        "Usage: #{File.basename($PROGRAM_NAME)} [options]\n        --val=ARG                    one of: a, b, c (Default: a)\n        --notapplicable=ARG          this overrides the fancy default (Default: no)\n    -h, --help\n"
+      ).to_stdout
+    end
   end
 
   context 'options' do
@@ -310,7 +330,7 @@ describe OptionParserGenerator do
         rescue SystemExit => e
           expect(e.status).to eq(0)
         end
-      end.to output("Usage: #{File.basename($PROGRAM_NAME)} [options]\n        --default=ARG                 (Default: value)\n        --val=ARG                     (Default: 123)\n    -b, --[no-]bool                  description of argument (Default: true)\n").to_stdout
+      end.to output("Usage: #{File.basename($PROGRAM_NAME)} [options]\n        --default=ARG                 (Default: value)\n        --val=ARG                    one of: 1, 2, 123 (Default: 123)\n    -b, --[no-]bool                  description of argument (Default: true)\n").to_stdout
     end
   end
 end
