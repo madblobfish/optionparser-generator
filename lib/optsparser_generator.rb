@@ -70,7 +70,7 @@ module OptionParserGenerator
         when FalseClass, TrueClass
           uneven_no = /\Ano(-no-no)*-(?!no)/ =~ trigger
           if trigger.start_with?('no-')
-            trigger.gsub!(/\A(no-)+/, '') # removes no- prefixes
+            trigger.gsub!(/\A(?:no-)/, '') # removes no- prefix(es)
             check_collisions(trigger, key, defaults) unless options[:ignore_collisions]
           end
           arguments.unshift "--[no-]#{trigger}"
