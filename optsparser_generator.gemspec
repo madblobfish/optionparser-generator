@@ -4,7 +4,7 @@ Gem::Specification.new do |s|
   s.summary  = 'Generates OptionParser using an OpenStruct'
   s.author   = 'Marvin Zerulla'
   s.homepage = 'https://github.com/madblobfish/optionparser-generator'
-  s.license  = 'AGPL-1.0'
+  s.license  = 'AGPL-3.0-only'
   s.files    = ['lib/optsparser_generator.rb']
   s.extra_rdoc_files = ['README.md', 'LICENSE.md']
   s.required_ruby_version = '>= 2.4.0'
